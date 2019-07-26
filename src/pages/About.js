@@ -7,7 +7,7 @@ class About extends React.Component {
     render(){
         return(
             <>
-                <Jumbotron title={ <TitleWithLogo title={`About Mage`} logo={'mage_logo.png'}/>}
+                <Jumbotron title={ <TitleWithLogo title={`About Mage`} logo={'mage_logo_96x96.png'}/>}
                            content={'This is a sample About us page'} />
                 <div className="container">
                     <div className="row">
