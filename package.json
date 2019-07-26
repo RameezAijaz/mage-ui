@@ -2,7 +2,7 @@
   "name": "mage-ui",
   "version": "1.0.0",
   "description": "scaffold web ui app",
-  "main": "index.js",
+  "main": "src/App.js",
   "scripts": {
     "build": "webpack --mode production",
     "watch": "webpack --watch",
@@ -18,6 +18,19 @@
   "bin": {
     "mage-ui": "bin/scaffold.js"
   },
+  "keywords": [
+    "boilerplate",
+    "ui",
+    "scaffold",
+    "react",
+    "webpack",
+    "react-router",
+    "bootstrap",
+    "easy",
+    "seed project",
+    "quick",
+    "babel"
+  ],
   "devDependencies": {
     "@babel/core": "^7.5.4",
     "@babel/preset-react": "^7.0.0",
