@@ -1,6 +1,6 @@
 {
   "name": "mage-ui",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "scaffold web ui app",
   "main": "src/App.js",
   "scripts": {
