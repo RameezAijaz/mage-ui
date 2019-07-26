@@ -1,11 +1,16 @@
 #!/usr/bin/env node
-
+const chalk = require('chalk');
+const ora = require('ora');
 const fs = require('fs-extra');
 const path = require('path');
 const https = require('https');
 const { exec } = require('child_process');
+const readline = require('readline').createInterface({
+    input: process.stdin,
+    output: process.stdout
+});
 
-const packageJson = require('../package.json');
+const existing_package_json = require('../package.json');
 
 const scripts = `"build": "webpack --mode production",
     "watch": "webpack --watch",
@@ -19,44 +24,92 @@ const getDeps = deps =>
         .replace(/,/g, ' ')
         .replace(/^/g, '')
         // exclude the plugin only used in this file, nor relevant to the boilerplate
-        .replace(/fs-extra[^\s]+/g, '');
+        .replace(/fs-extra[^\s]+/g, '')
+        .replace(/chalk[^\s]+/g, '')
+        .replace(/ora[^\s]+/g, '');
 
-console.log('Initializing project..');
+async function mage() {
+    const project_name = await askQuestion(`What would you like to name your application? \n`).catch(error=> {
+        throw new Error(`${error}`)
+    });
+    console.log(`Initializing ${project_name} ...`);
+    await createProjectDirectory(project_name).catch(error=> {
+        throw new Error(`${error}`)
+    });
+    await copySourceDirectory(project_name).catch(error=> {
+        throw new Error(`${error}`)
+    });
+    const files_to_copy = ['README.md', 'webpack.config.js', '.babelrc', '.gitignore'];
+    await copyFiles(files_to_copy, project_name).catch(error=> {
+        throw new Error(`${error}`)
+    });
 
-if(!process.argv[2])
-{
-    console.log('need a name for your UI app');
-    console.log('pass it like mage-ui app-name');
-    return;
+    const spinner = ora('Installing dependencies -- it might take a while..').start();
+
+
+    await initializePackageJson(project_name).catch(error=> {
+        spinner.stopAndPersist({
+            text:'Something went wrong..',
+            symbol:"✖"
+        });
+        throw new Error(`${error}`)
+    });
+    const npmStdout = await installingDependencies(project_name);
+    spinner.stopAndPersist({
+        text:'Dependencies installed successfully..',
+        symbol:"✔"
+    });
+    console.log(chalk.cyan(npmStdout));
+
+    console.log(chalk.green(`All done!\nYour app is now started into ${project_name} folder, refer to the README for the project structure.\nHappy Coding!`));
 
 }
-exec(
-    `mkdir ${process.argv[2]} && cd ${process.argv[2]} && npm init -f`,
-    (initErr, initStdout, initStderr) => {
-        if (initErr) {
-            console.error(`Error while creating new project directory: 
-    ${initErr}`);
-            return;
-        }
-        const packageJSON = `${process.argv[2]}/package.json`;
-        // replace the default scripts, with the webpack scripts in package.json
-        fs.readFile(packageJSON, (err, file) => {
-            if (err) throw err;
-            const data = file
-                .toString()
-                .replace('"test": "echo \\"Error: no test specified\\" && exit 1"', scripts);
-            fs.writeFile(packageJSON, data, err2 => err2 || true);
+
+
+
+function askQuestion(question){
+    return new Promise((resolve, reject)=>{
+        readline.question(`${question}`, (answer) => {
+            readline.close();
+            if(!answer)
+            {
+                reject('Invalid Input');
+                return;
+            }
+            resolve(answer);
         });
 
-        const filesToCopy = ['README.md', 'webpack.config.js', '.babelrc'];
+    })
+}
 
-        for (let i = 0; i < filesToCopy.length; i += 1) {
-            fs
-                .createReadStream(path.join(__dirname, `../${filesToCopy[i]}`))
-                .pipe(fs.createWriteStream(`${process.argv[2]}/${filesToCopy[i]}`));
+function createProjectDirectory(project_name){
+    return new Promise((resolve, reject)=>{
+        if(!project_name)
+        {
+            reject('Invalid project name');
+            return;
         }
+        exec(`mkdir ${project_name} && cd ${project_name} && npm init -f`, (initErr)=>{
+            if (initErr) {
+                reject(`Error while creating new project directory: ${initErr}`);
+                return;
+            }
+            resolve();
+        })
+    })
+}
+function copyFiles(filesToCopy=[], project_name){
+
+    return new Promise((resolve, reject)=>{
+
+        filesToCopy.forEach((file)=>{
+            if(file !== '.gitignore')
+                fs.createReadStream(path.join(__dirname, `../${file}`))
+                    .pipe(fs.createWriteStream(`${project_name}/${file}`));
+        });
+
         https.get(
-            'https://raw.githubusercontent.com/RameezAijaz/mage-ui/master/.gitignore',
+            'https://raw.githubusercontent.com/RameezAijaz/simple-chrome-extension/master/.gitignore',
             (res) => {
                 res.setEncoding('utf8');
                 let body = '';
@@ -64,40 +117,73 @@ exec(
                     body += data;
                 });
                 res.on('end', () => {
-                    fs.writeFile(`${process.argv[2]}/.gitignore`, body, { encoding: 'utf-8' }, (err) => {
-                        if (err) throw err;
+                    fs.writeFile(`${project_name}/.gitignore`, body, { encoding: 'utf-8' }, (err) => {
+                        if (err) {
+                            reject(err);
+                            return;
+                        }
+                        resolve();
                     });
                 });
             },
         );
 
-        console.log('npm init -- done\n');
+    });
 
-        // installing dependencies
-        console.log('Installing deps -- it might take a while..');
-        const devDeps = getDeps(packageJson.devDependencies);
-        const deps = getDeps(packageJson.dependencies);
-        exec(
-            `cd ${process.argv[2]} && npm i -D ${devDeps} && npm i -S ${deps}`,
-            (npmErr, npmStdout, npmStderr) => {
-                if (npmErr) {
-                    console.error(`Error while installing dependencies: 
-      ${npmErr}`);
+
+}
+function initializePackageJson(project_name){
+    return new Promise((resolve, reject)=>{
+        if(!project_name)
+        {
+            reject('Invalid project name');
+            return;
+        }
+        const new_package_json = `${project_name}/package.json`;
+        // replace the default scripts, with the webpack scripts in package.json
+        fs.readFile(new_package_json, (err, file) => {
+            if (err) {
+                reject(`Error while creating new project directory: ${err}`);
+                return;
+            }
+            const data = file
+                .toString()
+                .replace('"test": "echo \\"Error: no test specified\\" && exit 1"', scripts);
+            fs.writeFile(new_package_json, data,(err)=>{
+                if(err)
+                {
+                    reject(err);
                     return;
                 }
-                console.log(npmStdout);
-                console.log('Dependencies installed');
+                resolve();
+            });
+        });
+    })
+}
+function copySourceDirectory(project_name){
+    return fs
+        .copy(path.join(__dirname, '../src'), `${project_name}/src`);
+}
+function installingDependencies(project_name){
 
-                console.log('Copying additional files..');
-                // copy additional source files
-                fs
-                    .copy(path.join(__dirname, '../src'), `${process.argv[2]}/src`)
-                    .then(() =>
-                        console.log(`All done!\nYour UI app is now started into ${
-                            process.argv[2]
-                            } folder, refer to the README for the project structure.\nHappy Coding!`))
-                    .catch(err => console.error(err));
+    return new Promise((resolve, reject)=>{
+
+        // installing dependencies
+        const devDeps = getDeps(existing_package_json.devDependencies);
+        const deps = getDeps(existing_package_json.dependencies);
+        exec(
+            `cd ${project_name} && npm i -D ${devDeps} && npm i -S ${deps}`,
+            (npmErr, npmStdout, npmStderr) => {
+                if (npmErr) {
+                    reject(`Error while installing dependencies: ${npmErr}`);
+                    return;
+                }
+                resolve(npmStdout);
             },
         );
-    },
-);
+
+    })
+
+}
+
+mage();

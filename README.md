@@ -1,2 +1,2 @@
-# mage-ui
+# Mage-UI
 scaffold web ui

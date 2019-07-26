@@ -6,7 +6,7 @@ class Home extends React.Component{
     render(){
         return(
             <>
-                <Jumbotron title={ <TitleWithLogo title={`Hello, Mage!`} logo={'mage_logo.png'}/>}
+                <Jumbotron title={ <TitleWithLogo title={`Hello, Mage!`} logo={'mage_logo_96x96.png'}/>}
                            content={`Welcome to mage-ui boilerplate. Mage-UI is a scaffolding tool to generate
                            lightweight boilerplate by just running single command. Mage-UI use following technologies:`} >
                     <p><a className="btn btn-primary btn-lg" href="#" role="button">Learn more »</a></p>
