@@ -4,7 +4,7 @@ Quickly scaffold UI boilerplate with just single command using:
 
 # Demo
 
-<a target="_blank" href="https://mage-ui-demo.firebaseapp.com/"> Click here for MAGE-UI demo ...</a>
+<a href="https://mage-ui-demo.firebaseapp.com/" target="_blank"> Click here for MAGE-UI demo ...</a>
 
 
 # Usage
