@@ -1,6 +1,6 @@
-# Mage-UI ![logo](https://github.com/RameezAijaz/mage-ui/blob/master/src/assets/img/mage_logo_36x36.png "logo")
+# Mage-UI ![logo](http://codementor.tech/wp-content/uploads/2019/07/mage_logo_36x36.png "logo")
 Quickly scaffold UI boilerplate with just single command using:
-![logo](https://github.com/RameezAijaz/mage-ui/blob/master/tech_used.png "logo")
+![logo](http://codementor.tech/wp-content/uploads/2019/07/tech_used.png "logo")
 
 # Demo
 
