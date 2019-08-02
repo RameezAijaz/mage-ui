@@ -47,14 +47,23 @@
     "webpack-dev-server": "^3.7.2"
   },
   "dependencies": {
+    "@fortawesome/fontawesome-svg-core": "^1.2.19",
+    "@fortawesome/free-solid-svg-icons": "^5.9.0",
+    "@fortawesome/react-fontawesome": "^0.1.4",
     "bootstrap": "^4.3.1",
     "chalk": "^2.4.2",
     "fs-extra": "^8.1.0",
+    "immutable": "^4.0.0-rc.12",
     "jquery": "^3.4.1",
+    "lodash": "^4.17.15",
     "ora": "^3.4.0",
     "popper.js": "^1.15.0",
     "react": "^16.8.6",
+    "react-bootstrap": "^1.0.0-beta.10",
     "react-dom": "^16.8.6",
-    "react-router-dom": "^5.0.1"
+    "react-redux": "^7.1.0",
+    "react-router-dom": "^5.0.1",
+    "redux": "^4.0.4",
+    "redux-logger": "^3.0.6"
   }
 }

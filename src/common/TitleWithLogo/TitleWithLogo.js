@@ -3,9 +3,10 @@ import React from "react";
 function TitleWithLogo(props){
     return (
         <> {props.title}
-            <small className="logo">
+           {props.logo &&
+           <small className="logo">
                 <img src={props.logo} alt={props.logo}/>
-            </small>
+            </small>}
         </>
     )
 }
