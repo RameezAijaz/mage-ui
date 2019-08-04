@@ -1,9 +1,8 @@
 import React from 'react';
 import { isEmpty } from 'lodash';
-import { ListGroup, Badge, OverlayTrigger, Tooltip} from 'react-bootstrap';
 import { connect } from 'react-redux'
 import { addToCart } from "../../../actions/index";
-import {ContentList} from "../../../common/ContentList/ContentList";
+import { ContentList } from "../../../common/ContentList/ContentList";
 
 
 class Inventory extends React.Component {

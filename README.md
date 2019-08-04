@@ -1,5 +1,5 @@
 # Mage-UI ![logo](http://codementor.tech/wp-content/uploads/2019/07/mage_logo_36x36.png "logo")
-Quickly scaffold UI boilerplate with just single command using:
+Using just single command, scaffold UI boilerplate with following libraries and examples of react and redux:
 ![logo](http://codementor.tech/wp-content/uploads/2019/07/Untitled-drawing-3.jpg "logo")
 
 # Demo

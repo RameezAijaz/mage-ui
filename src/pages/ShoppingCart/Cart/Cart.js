@@ -2,7 +2,7 @@ import React from 'react';
 import { isEmpty } from 'lodash';
 import { removeFromCart } from "../../../actions/index";
 import { connect } from 'react-redux'
-import {ContentList} from "../../../common/ContentList/ContentList";
+import { ContentList } from "../../../common/ContentList/ContentList";
 
 class Cart extends React.Component {
     render(){
