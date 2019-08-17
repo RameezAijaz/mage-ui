@@ -1,7 +1,6 @@
 import React from 'react';
-import { isEmpty } from 'lodash';
 import { connect } from 'react-redux'
-import { addToCart } from "../../../actions/index";
+import { addToCart } from "../actions";
 import { ContentList } from "../../../common/ContentList/ContentList";
 
 

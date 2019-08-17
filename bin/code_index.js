@@ -1,0 +1,21 @@
+module.exports={
+    files_to_change:[
+        'src/App.js',
+        'src/base_template/AppRoutes/AppRoutes.js',
+        'src/pages/Examples/Examples.js'],
+    packages:{
+        redux:[
+            "react-redux",
+            "redux",
+            "redux-logger"
+        ],
+        mageui: [
+            "chalk",
+            "fs-extra",
+            "ora"
+        ]
+    },
+    directories:{
+        redux:['src/pages/ShoppingCart']
+    }
+};

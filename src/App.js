@@ -1,16 +1,20 @@
 import { BrowserRouter as Router } from "react-router-dom";
-import { Provider } from 'react-redux';
-import { applyMiddleware, createStore } from 'redux';
 import 'bootstrap/dist/js/bootstrap.min';
 import './assets/css/style.css';
 import ReactDOM from 'react-dom';
 import React from 'react';
 import Header from './base_template/Header/Header';
 import AppRoutes from "./base_template/AppRoutes/AppRoutes";
-import rootReducer from './reducers';
-import logger from 'redux-logger'
 
-const store = createStore(rootReducer, applyMiddleware(logger));
+/* REDUX_SPECIFIC_CODE_START */
+import { Provider } from 'react-redux';
+import logger from 'redux-logger'
+import { applyMiddleware, createStore, combineReducers } from 'redux';
+import shoppingCartReducer from './pages/ShoppingCart/reducers';
+
+const store = createStore(combineReducers({shoppingCartReducer}), applyMiddleware(logger));
+/* REDUX_SPECIFIC_CODE_END */
+
 
 class App extends React.Component {
     render(){
@@ -28,8 +32,13 @@ class App extends React.Component {
 }
 
 ReactDOM.render(
+    /* REDUX_SPECIFIC_CODE_START */
     <Provider store={store}>
+        {/* REDUX_SPECIFIC_CODE_END */}
         <App />
-    </Provider>,
+        {/* REDUX_SPECIFIC_CODE_START */}
+    </Provider>
+    /* REDUX_SPECIFIC_CODE_END */
+    ,
     document.getElementById('app')
 );

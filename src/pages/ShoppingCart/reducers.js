@@ -1,13 +1,13 @@
 import { Map } from 'immutable';
 import { findIndex, remove } from 'lodash';
-import { ADD_TO_CART, REMOVE_FROM_CART } from '../actions';
+import { ADD_TO_CART, REMOVE_FROM_CART } from './actions';
 
 const initialState = Map({
     itemsInventory: [
         {name:'Egg', count:5},
         {name:'Bread', count:5},
         {name:'Milk', count:5}
-        ],
+    ],
     shoppingCart: []
 });
 

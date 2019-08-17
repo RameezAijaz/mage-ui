@@ -13,7 +13,9 @@ class Examples extends React.Component {
                     <Nav defaultActiveKey="/home" className="flex-column">
 
                         <NavLink className="nav-link" to="/todoList" exact={true}>React setState TodoList Example</NavLink>
+                        /* REDUX_SPECIFIC_CODE_START */
                         <NavLink className="nav-link" to="/shoppingCart" exact={true}>Redux Shopping Cart Example</NavLink>
+                        /* REDUX_SPECIFIC_CODE_END */
                     </Nav>
 
             </Layout>

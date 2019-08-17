@@ -1,16 +1,17 @@
 #!/usr/bin/env node
 
-const chalk = require('chalk');
-const ora = require('ora');
-const fs = require('fs-extra');
-const path = require('path');
-const https = require('https');
-const { exec } = require('child_process');
-const readline = require('readline').createInterface({
-    input: process.stdin,
-    output: process.stdout
-});
-const Transform = require('stream').Transform;
+const code_index = require('./code_index'),
+    chalk = require('chalk'),
+    ora = require('ora'),
+    fs = require('fs-extra'),
+    path = require('path'),
+    https = require('https'),
+    { exec } = require('child_process'),
+    readline = require('readline').createInterface({
+        input: process.stdin,
+        output: process.stdout
+    }),
+    Transform = require('stream').Transform;
 
 const includesElementOf = (arr, str)=>{
     for(let i=0; i< arr.length; i++){
@@ -34,11 +35,6 @@ const scripts = `"build": "webpack --mode production",
         `import { applyMiddleware, createStore } from 'redux';`,
         `import ShoppingCart from '../../pages/ShoppingCart/ShoppingCart';`,
     ],
-    redux_directories = [
-        'actions',
-        'reducers',
-        'ShoppingCart'
-    ],
     redux_code = [
         'const store = createStore(rootReducer, applyMiddleware(logger));',
         '<Provider store={store}>',
@@ -49,28 +45,23 @@ const scripts = `"build": "webpack --mode production",
         '        path:"/shoppingCart/",\n' +
         '        component:ShoppingCart\n' +
         '    }\n'
-    ],
-    redux_dependencies = [
-        "redux",
-        "redux-logger"
-    ],
-    files_to_change = [
-        'src/App.js',
-        'src/base_template/AppRoutes/AppRoutes.js',
-        'src/pages/Examples/Examples.js'
     ];
 
 
-const getDeps = deps =>
-    Object.entries(deps)
-        .map(dep => `${dep[0]}@${dep[1]}`)
-        .toString()
-        .replace(/,/g, ' ')
-        .replace(/^/g, '')
-        // exclude the plugin only used in this file, nor relevant to the boilerplate
-        .replace(/fs-extra[^\s]+/g, '')
-        .replace(/chalk[^\s]+/g, '')
-        .replace(/ora[^\s]+/g, '');
+const getDeps = (deps, config) => {
+    let packages = Object.entries(deps).map(dep => `${dep[0]}@${dep[1]}`).toString().replace(/,/g, ' ').replace(/^/g, '');
+
+    code_index.packages.mageui.forEach((p)=>{
+        packages = packages.replace(new RegExp(`${p}[^\\s]+`, 'g'), '')
+    });
+    if(config.include_redux === 'n'){
+        code_index.packages.redux.forEach((p)=>{
+            packages = packages.replace(new RegExp(`${p}[^\\s]+`, 'g'), '')
+        });
+    }
+    return packages;
+};
+
 
 async function mage() {
     const project_name = await askQuestion(`What would you like to name your application? \n`).catch(error=> {
@@ -104,7 +95,7 @@ async function mage() {
     await copySourceDirectory(project_name, config).catch(error=> {
         throw new Error(`${error}`)
     });
-    modifyFiles(files_to_change, project_name, config);
+    modifyFiles(code_index.files_to_change, project_name, config);
 
 
     const files_to_copy = ['README.md', 'webpack.config.js', '.babelrc', '.gitignore'];
@@ -170,34 +161,39 @@ function modifyFiles(filesToModify=[], project_name, config){
 
     filesToModify.forEach((file)=>{
         /// Create the transform stream:
-        let removeImports = new Transform({
+        let filterCode = new Transform({
                 decodeStrings: false
-            }),
-            removeCode = new Transform({
-                decodeStrings: false
-            });
 
-        removeImports._transform = function(chunk, encoding, done) {
-            if(config.include_redux !== 'n'){
-                done(null, chunk.toString())
-            }
-            else{
-                done(null, chunk.toString().split('\n').filter((line)=>!includesElementOf(redux_imports, line)).join("\n"));
-            }
-        };
-        removeCode._transform = function(chunk, encoding, done) {
+            });
+        filterCode._transform = function(chunk, encoding, done) {
             let code = chunk.toString();
             if(config.include_redux === 'n'){
-                redux_code.forEach((rc)=>{
-                    code = code.replace(rc, "")
-                });
+
+
+                code = code.replace('{/* REDUX_SPECIFIC_CODE_START */}','REDUX_SPECIFIC_CODE_START' )
+                    .replace('{/* REDUX_SPECIFIC_CODE_END */}','REDUX_SPECIFIC_CODE_END' )
+                    .replace(/^\* REDUX_SPECIFIC_CODE_START \*$/,'REDUX_SPECIFIC_CODE_START' )
+                    .replace(/^\* REDUX_SPECIFIC_CODE_END \*$/,'REDUX_SPECIFIC_CODE_END' );
+
+                const regex = new RegExp(`(REDUX_SPECIFIC_CODE_START)([\\S\\s]*)(REDUX_SPECIFIC_CODE_END)`);
+                console.log("REGEX+++++++++++++");
+                console.log(regex);
+                // code = code.replace(regex, '');
+
+                console.log("encoding");
+                console.log(encoding);
+                console.log(code);
+            }else{
+                code = code.replace('{/* REDUX_SPECIFIC_CODE_START */}','' );
+                code = code.replace('{/* REDUX_SPECIFIC_CODE_END */}','' );
+                code = code.replace('\/\* REDUX_SPECIFIC_CODE_START \*\/','' );
+                code = code.replace('\/\* REDUX_SPECIFIC_CODE_END \*\/','' );
             }
             done(null, code);
         };
-        fs.createReadStream(path.join(__dirname, `../${file}`))
-            .pipe(removeImports)
-            .pipe(removeCode)
-            .pipe(fs.createWriteStream(`${project_name}/${file}`));
+        fs.createReadStream(path.join(__dirname, `../${file}`), {encoding:'ascii'})
+            .pipe(filterCode)
+            .pipe(fs.createWriteStream(`${project_name}/${file}`, {encoding:'ascii'}));
 
 
     });
@@ -274,7 +270,7 @@ function copySourceDirectory(project_name, config){
                     if(config.include_redux === 'n'){
 
                         let filter = true,
-                            files_to_avoid = [...redux_directories, ...files_to_change];
+                            files_to_avoid = [...code_index.directories.redux, ...code_index.files_to_change];
                         for(let i=0; i< files_to_avoid.length; i++){
                             if(path.includes(files_to_avoid[i]))
                             {
@@ -295,14 +291,9 @@ function installingDependencies(project_name, config){
     return new Promise((resolve, reject)=>{
 
         // installing dependencies
-        let devDeps = getDeps(existing_package_json.devDependencies),
-            deps = getDeps(existing_package_json.dependencies);
-        if(config.include_redux === 'n'){
+        let devDeps = getDeps(existing_package_json.devDependencies, config),
+            deps = getDeps(existing_package_json.dependencies, config);
 
-            deps = deps.replace(/react-redux[^\s]+/g, '')
-                .replace(/redux-logger[^\s]+/g, '')
-                .replace(/redux[^\s]+/g, '');
-        }
         exec(
             `cd ${project_name} && npm i -D ${devDeps} && npm i -S ${deps}`,
             (npmErr, npmStdout, npmStderr) => {

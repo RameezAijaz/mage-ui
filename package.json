@@ -9,7 +9,7 @@
     "start": "webpack-dev-server --open",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "Syed Rameez Aijaz <ramez.aijaz@gmail.com>",
+  "author": "Mage UI",
   "license": "ISC",
   "repository": {
     "type": "git",
